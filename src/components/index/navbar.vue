@@ -1,0 +1,208 @@
+<template lang="html">
+  <div class="fontSizeNavbar">
+    <v-navigation-drawer fixed :clipped="$vuetify.breakpoint.mdAndUp" app v-model="drawer">
+      <div v-if="userType ==='admin'">
+        <v-list>
+          <template v-for="item in itemsAdmin">
+            <v-list-tile v-if="item.subItems.length === 0" @click="toPage(item.url)" :key="item.text">
+              <v-list-tile-action>
+                <v-icon>{{ item.icon }}</v-icon>
+              </v-list-tile-action>
+              <v-list-tile-content>
+                <v-list-tile-title>
+                  {{ item.text }}
+                </v-list-tile-title>
+              </v-list-tile-content>
+            </v-list-tile>
+            <v-list-group v-else :prepend-icon="item.icon" v-model="item.active" no-action>
+              <v-list-tile slot="activator">
+                <v-list-tile-content>
+                  <v-list-tile-title>{{ item.text }}</v-list-tile-title>
+                </v-list-tile-content>
+              </v-list-tile>
+              <v-list-tile v-for="(sub, i) in item.subItems" :key="i" @click="toPage(sub.url)">
+                <v-list-tile-title>{{sub.text}}</v-list-tile-title>
+              </v-list-tile>
+            </v-list-group>
+          </template>
+        </v-list>
+      </div>
+      <div v-else-if="userType ==='SALE'">
+        <v-list>
+          <template v-for="item in itemsSale">
+            <v-list-tile v-if="item.subNormalItems.length === 0 && item.subVPItems.length === 0" @click="toPage(item.url)" :key="item.text">
+              <v-list-tile-action>
+                <v-icon>{{ item.icon }}</v-icon>
+              </v-list-tile-action>
+              <v-list-tile-content>
+                <v-list-tile-title>
+                  {{ item.text }}
+                </v-list-tile-title>
+              </v-list-tile-content>
+            </v-list-tile>
+            <v-list-group v-else :prepend-icon="item.icon" v-model="item.active" no-action>
+              <v-list-tile slot="activator">
+                <v-list-tile-content>
+                  <v-list-tile-title>{{ item.text }}</v-list-tile-title>
+                </v-list-tile-content>
+              </v-list-tile>
+              <div v-if="userData.position === 'SALE'">
+                <v-list-tile v-for="(sub, i) in item.subNormalItems" :key="i" @click="toPage(sub.url)">
+                  <v-list-tile-title>{{sub.text}}</v-list-tile-title>
+                </v-list-tile>
+              </div>
+              <div v-else-if="userData.position === 'TEAMLEAD' || userData.position === 'GROUPLEAD'">
+                <v-list-tile v-for="(sub, i) in item.subVPItems" :key="i" @click="toPage(sub.url)">
+                  <v-list-tile-title>{{sub.text}}</v-list-tile-title>
+                </v-list-tile>
+              </div>
+            </v-list-group>
+          </template>
+        </v-list>
+      </div>
+    </v-navigation-drawer>
+    <v-toolbar class="bgToolbar" dark app :clipped-left="$vuetify.breakpoint.mdAndUp" fixed>
+      <v-toolbar-title  class="ml-0 pl-3">
+        <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+      </v-toolbar-title>
+      <div class="logoDiv pr-5 pl-2 pointer" @click="toPage('/')">
+        <h2>Salesforecast</h2>
+        <!-- <img src="/static/img/index-component/logo-inet.png" class="navbarLogo"> -->
+      </div>
+      <v-spacer></v-spacer>
+      <div>
+        <!-- <v-btn icon>
+        <v-icon>notifications</v-icon>
+      </v-btn> -->
+      <span dark class="username hidden-xs-only">{{userData.fname}} {{userData.lname}}<v-icon>keyboard_arrow_down</v-icon></span>
+      <v-btn dark small outline class="hidden-xs-only" @click="logout()">logout</v-btn>
+      <v-btn dark icon class="hidden-sm-and-up" @click="logout()">
+        <v-icon>exit_to_app</v-icon>
+      </v-btn>
+    </div>
+  </v-toolbar>
+</div>
+</template>
+
+<script>
+import { Decode } from '@/services'
+export default {
+  data () {
+    return {
+      itemsSale: [
+        {
+          icon: 'assignment',
+          text: 'Document Management',
+          url: 'home',
+          perrmission: '',
+          active: true,
+          subVPItems: [{text: 'Approve', url: 'approve'}],
+          subNormalItems: [{text: 'Pending', url: 'pending'}, {text: 'Reject', url: 'reject'}, {text: 'Approve', url: 'approve'}, {text: 'Request', url: 'request'}]
+        },
+        {
+          icon: 'add_box',
+          text: 'Create Document',
+          url: 'createReport',
+          perrmission: '',
+          subVPItems: [],
+          subNormalItems: []
+        }
+      ],
+      itemsAdmin: [
+        {
+          icon: 'assignment',
+          text: 'Document Management',
+          url: 'home',
+          perrmission: '',
+          active: true,
+          subItems: [{text: 'Pending', url: 'pending'}, {text: 'Reject', url: 'reject'}, {text: 'Approve', url: 'approve'}, {text: 'Request', url: 'request'}]
+        },
+        {
+          icon: 'add_box',
+          text: 'Create Document',
+          url: 'createReport',
+          perrmission: '',
+          subItems: []
+        },
+        {
+          icon: 'perm_identity',
+          text: 'User Management',
+          url: 'manage',
+          perrmission: 'admin',
+          subItems: [{text: 'User', url: 'manageUser'}, {text: 'Sale', url: 'manageSale'}, {text: 'Group Sale', url: 'manageGroupSale'}, {text: 'Presale', url: 'managePresale'}]
+        }
+      ],
+      drawer: false,
+      fav: true,
+      menu: false,
+      message: false,
+      hints: true,
+      dialog: false
+    }
+  },
+  created () {
+  },
+  computed: {
+    userData () {
+      if (this.$cookies.isKey('information')) {
+        return JSON.parse(Decode.decode(this.$cookies.get('information')))
+      } else {
+        return ''
+      }
+    },
+    userType () {
+      if (this.$cookies.isKey('usertype')) {
+        return Decode.decode(this.$cookies.get('usertype')).replace(/"/g, '')
+      } else {
+        return ''
+      }
+    }
+  },
+  methods: {
+    toPage (url) {
+      if (url === 'logout') {
+        this.$cookies.remove('information', '/', process.env.DOMAIN)
+        this.$cookies.remove('usertype', '/', process.env.DOMAIN)
+        this.$router.push('/login')
+      } else {
+        this.$emit('urlSelect', url)
+      }
+    },
+    logout () {
+      this.toPage('logout')
+    }
+  }
+}
+</script>
+<style lang="css" scoped>
+.fontSizeNavbar {
+  font-size:  0.98em;
+}
+.logoDiv{
+  border-radius: 1em;
+}
+.navbarLogo{
+  width: 70px;
+  height: auto;
+}
+.logoDiv{
+  width: 250px;
+}
+.username{
+  margin-right: 16px;
+}
+@media only screen and (max-width: 768px) {
+  .logoDiv{
+    width: 120px;
+    height: 90%;
+  }
+}
+@media only screen and (max-width: 640px) {
+  .username{
+    margin-right: 0;
+  }
+}
+.bgToolbar {
+  background-color: #44BBA4 !important;
+}
+</style>

@@ -1,0 +1,9 @@
+diff a/src/components/index/admin/manage/presale/managePresale.vue b/src/components/index/admin/manage/presale/managePresale.vue	(rejected hunks)
+@@ -92,6 +92,7 @@
+       })
+     },
+     deletePresale (val) {
++      // var me = this
+       // this.$swal({
+       //   title: 'แน่ใจไหม ?',
+       //   text: 'ลบคุณ ' + val.fname + ' ' + val.lname,

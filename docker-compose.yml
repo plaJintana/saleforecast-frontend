@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+    web:
+        image: nginx:latest
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./dist:/usr/share/nginx/html
+            - ./nginx2.conf:/etc/nginx/conf.d/default.conf
+        networks:
+            - code-network
+
+networks:
+    code-network:
+        driver: bridge
